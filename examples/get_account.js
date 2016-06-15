@@ -1,5 +1,5 @@
 var sendinblue = require('../sendinblue-api');
-var sendinObj = new sendinblue('https://api.sendinblue.com/v2.0/', 'xnZCHqGbBVTXRjU0', 5000);
+var sendinObj = new sendinblue('https://api.sendinblue.com/v2.0/', 'your_api_key', 5000);
 
 sendinObj.get_account().on('complete', function(data) {
     data = JSON.parse(data);
