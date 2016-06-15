@@ -1,0 +1,28 @@
+{
+  "name": "sendinblue-api",
+  "version": "1.0.0",
+  "description": "Official SendinBlue provided API V2 npm library",
+  "main": "sendinblue-api.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "sendinblue"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mailin-api/sendinblue-nodejs-api-npm.git"
+  },
+  "author": {
+    "name" : "SendinBlue",
+    "email": "developers@sendinblue.com"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mailin-api/sendinblue-nodejs-api-npm/issues"
+  },
+  "homepage": "https://github.com/mailin-api/sendinblue-nodejs-api-npm/",
+  "dependencies": {
+    "restler": "^3.2.2"
+  }
+}
