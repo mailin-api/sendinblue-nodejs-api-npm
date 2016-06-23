@@ -50,9 +50,9 @@ Assuming that you have installed this package, use below sample script to get st
 	var sendinblue = require('../sendinblue-api');
 	var sendinObj = new sendinblue('https://api.sendinblue.com/v2.0/', 'your_api_key', 5000);	//Optional parameter: Timeout in MS
 
-	sendinObj.get_account().on('complete', function(data) {
-		data = JSON.parse(data);
-		console.log(data);
+	var input = {};
+	sendinObj.get_account(input, function(err, response){
+	     console.log(response);
 	});
 ```
 
