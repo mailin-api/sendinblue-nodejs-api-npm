@@ -5,9 +5,35 @@ This is [SendinBlue](https://www.sendinblue.com) provided API V2 npm library. It
 SendinBlue API's use HTTP Authentication through an api key. You can create your api key from [API Console](https://my.sendinblue.com/advanced/apikey), after you sign up for an account with SendinBlue. You must use latest version 2.0, access key, for accessing APIs.
 
 
-## Installation
+## Install Package
 
-``` npm install sendinblue-api --save ```
+The following recommended installation requires [npm](https://npmjs.org/). If you are unfamiliar with npm, see the [npm docs](https://npmjs.org/doc/).
+
+Add the following to your `package.json` file:
+
+```json
+{
+  ...
+  "dependencies": {
+    ...
+    "sendinblue-api": "^1.0.0"
+  }
+}
+```
+
+Install sendinblue-api and its dependencies:
+
+```bash
+npm install
+```
+
+### Alternative Installation
+
+You can also install sendinblue-api locally with the following command:
+
+```bash
+npm install sendinblue-api
+```
 
 
 ## Dependencies

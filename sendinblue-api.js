@@ -10,9 +10,7 @@ function SendinblueAPI_v1_0(base_url, apiKey, timeout) {
 }
 
 module.exports = SendinblueAPI_v1_0;
-
-SendinblueAPI_v1_0.prototype.call = function(resource, method, input) {
-
+SendinblueAPI_v1_0.prototype.call = function(resource, method, input, cb) {
 	var called_url = this.base_url + '/' + resource;
 	var content_type = 'application/json';
 
@@ -22,48 +20,81 @@ SendinblueAPI_v1_0.prototype.call = function(resource, method, input) {
 		throw new Error('value not allowed for timeout');
 	}
 
-	return restler.request(called_url, {
-			method: method,
-			timeout: this.timeout,
-			data: input,
-			headers: {
-				'api-key': this.api_key,
-				'content-type': content_type
-			}
+	restler.request(called_url, {method: method, timeout: this.timeout, data: input, headers: {'api-key': this.api_key, 'content-type': content_type}})
+	.on('complete', function(response) {
+		var responseObj = JSON.parse(response);
+
+		cb(null, responseObj);
+	});
+};
+
+SendinblueAPI_v1_0.prototype.get_request = function(resource, input, cb) {
+	this.call(resource, 'GET', input, function(err, res) {
+		if (err) {
+			return cb(err, null);
 		}
-	);
+		return cb(null, res);
+	});
 };
 
-SendinblueAPI_v1_0.prototype.get_request = function(resource, input) {
-	return this.call(resource, 'GET', input);
+SendinblueAPI_v1_0.prototype.post_request = function(resource, input, cb) {
+	this.call(resource, 'POST', input, function(err, res) {
+		if (err) {
+			return cb(err, null);
+		}
+		return cb(null, res);
+	});
 };
 
-SendinblueAPI_v1_0.prototype.post_request = function(resource, input) {
-	return this.call(resource, 'POST', input);
+SendinblueAPI_v1_0.prototype.put_request = function(resource, input, cb) {
+	this.call(resource, 'PUT', input, function(err, res) {
+		if (err) {
+			return cb(err, null);
+		}
+		return cb(null, res);
+	});
 };
 
-SendinblueAPI_v1_0.prototype.put_request = function(resource, input) {
-	return this.call(resource, 'PUT', input);
-};
-
-SendinblueAPI_v1_0.prototype.delete_request = function(resource, input) {
-	return this.call(resource, 'DELETE', input);
+SendinblueAPI_v1_0.prototype.delete_request = function(resource, input, cb) {
+	this.call(resource, 'DELETE', input, function(err, res) {
+		if (err) {
+			return cb(err, null);
+		}
+		return cb(null, res);
+	});
 };
 
 /*
 	Get Account.
 	No input required
 */
-SendinblueAPI_v1_0.prototype.get_account = function() {
-	return this.get_request('account', '');
+SendinblueAPI_v1_0.prototype.get_account = function(data, cb) {
+	this.get_request('account', '', function(error, result) {
+
+		/*if(!error && result.httpstatuscode == 200) {
+					return cb(null, result);
+		} else {
+			return cb(error, null);
+		}*/
+
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
 	Get SMTP details.
 	No input required
 */
-SendinblueAPI_v1_0.prototype.get_smtp_details = function() {
-	return this.get_request('account/smtpdetail', '');
+SendinblueAPI_v1_0.prototype.get_smtp_details = function(data, cb) {
+	this.get_request('account/smtpdetail', '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -79,8 +110,13 @@ SendinblueAPI_v1_0.prototype.get_smtp_details = function() {
 		- sms_credit {Integer} Number of sms credts
 	@options data {Array} associate_ip: Associate dedicated IPs to reseller child. You can use commas to separate multiple IPs [Optional]
 */
-SendinblueAPI_v1_0.prototype.create_child_account = function(data) {
-	return this.post_request('account', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.create_child_account = function(data, cb) {
+	this.post_request('account', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -94,8 +130,13 @@ SendinblueAPI_v1_0.prototype.create_child_account = function(data) {
 	@options data {Array} associate_ip: Associate dedicated IPs to reseller child. You can use commas to separate multiple IPs [Optional]
 	@options data {Array} disassociate_ip: Disassociate dedicated IPs from reseller child. You can use commas to separate multiple IPs [Optional]
 */
-SendinblueAPI_v1_0.prototype.update_child_account = function(data) {
-	return this.put_request('account', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.update_child_account = function(data, cb) {
+	this.put_request('account', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -103,11 +144,16 @@ SendinblueAPI_v1_0.prototype.update_child_account = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {String} auth_key: 16 character authorization key of Reseller child to be deleted [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.delete_child_account = function(data) {
+SendinblueAPI_v1_0.prototype.delete_child_account = function(data, cb) {
 	var auth_key = data.auth_key;
 
 	delete data.auth_key;
-	return this.delete_request('account/' + auth_key, '');
+	this.delete_request('account/' + auth_key, '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -115,8 +161,13 @@ SendinblueAPI_v1_0.prototype.delete_child_account = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {String} auth_key: 16 character authorization key of Reseller child. Example : To get the details of more than one child account, use, {"key1":"abC01De2fGHI3jkL","key2":"mnO45Pq6rSTU7vWX"} [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.get_reseller_child = function(data) {
-	return this.post_request('account/getchildv2', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.get_reseller_child = function(data, cb) {
+	this.post_request('account/getchildv2', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -130,8 +181,13 @@ SendinblueAPI_v1_0.prototype.get_reseller_child = function(data) {
 		- email_credit {Integer} number of email credits
 		- sms_credit {Integer} Number of sms credts
 */
-SendinblueAPI_v1_0.prototype.add_remove_child_credits = function(data) {
-	return this.post_request('account/addrmvcredit', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.add_remove_child_credits = function(data, cb) {
+	this.post_request('account/addrmvcredit', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -144,8 +200,13 @@ SendinblueAPI_v1_0.prototype.add_remove_child_credits = function(data) {
 	@options data {String} tag: The tag that you can associate with the message [Optional]
 	@options data {String} type: Type of message. Possible values – marketing (default) & transactional. You can use marketing for sending marketing SMS, & for sending transactional SMS, use transactional type [Optional]
 */
-SendinblueAPI_v1_0.prototype.send_sms = function(data) {
-	return this.post_request('sms', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.send_sms = function(data, cb) {
+	this.post_request('sms', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -160,8 +221,13 @@ SendinblueAPI_v1_0.prototype.send_sms = function(data) {
 	@options data {String} scheduled_date: The day on which the SMS campaign is supposed to run [Optional]
 	@options data {Integer} send_now: Flag to send campaign now. Possible values = 0 (default) & 1. send_now = 0 means campaign can’t be send now, & send_now = 1 means campaign ready to send now [Optional]
 */
-SendinblueAPI_v1_0.prototype.create_sms_campaign = function(data) {
-	return this.post_request('sms', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.create_sms_campaign = function(data, cb) {
+	this.post_request('sms', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -177,11 +243,16 @@ SendinblueAPI_v1_0.prototype.create_sms_campaign = function(data) {
 	@options data {String} scheduled_date: The day on which the SMS campaign is supposed to run [Optional]
 	@options data {Integer} send_now: Flag to send campaign now. Possible values = 0 (default) & 1. send_now = 0 means campaign can’t be send now, & send_now = 1 means campaign ready to send now [Optional]
 */
-SendinblueAPI_v1_0.prototype.update_sms_campaign = function(data) {
+SendinblueAPI_v1_0.prototype.update_sms_campaign = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.put_request('sms/' + id, JSON.stringify(data));
+	this.put_request('sms/' + id, JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -190,11 +261,16 @@ SendinblueAPI_v1_0.prototype.update_sms_campaign = function(data) {
 	@options data {Integer} id: Id of the SMS campaign [Mandatory]
 	@options data {String} to: Mobile number with the country code to send test SMS. The mobile number defined here should belong to one of your contacts in SendinBlue account and should not be blacklisted [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.send_bat_sms = function(data) {
-	var campid = data.id;
+SendinblueAPI_v1_0.prototype.send_bat_sms = function(data, cb) {
+	var id = data.id;
 
 	delete data.id;
-	return this.get_request('sms/' + campid, JSON.stringify(data));
+	this.get_request('sms/' + id, JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -205,8 +281,13 @@ SendinblueAPI_v1_0.prototype.send_bat_sms = function(data) {
 	@options data {Integer} page: Maximum number of records per request is 500, if there are more than 500 campaigns then you can use this parameter to get next 500 results [Optional]
 	@options data {Integer} page_limit: This should be a valid number between 1-1000. If page limit is kept empty or >1000, default is 500 [Optional]
 */
-SendinblueAPI_v1_0.prototype.get_campaigns_v2 = function(data) {
-	return this.get_request('campaign/detailsv2', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.get_campaigns_v2 = function(data, cb) {
+	this.get_request('campaign/detailsv2', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -214,8 +295,16 @@ SendinblueAPI_v1_0.prototype.get_campaigns_v2 = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {Integer} id: Unique Id of the campaign [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.get_campaign_v2 = function(data) {
-	return this.get_request('campaign/' + data.id + '/detailsv2', '');
+SendinblueAPI_v1_0.prototype.get_campaign_v2 = function(data, cb) {
+	var id = data.id;
+
+	delete data.id;
+	this.get_request('campaign/' + id + '/detailsv2', '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -240,8 +329,13 @@ SendinblueAPI_v1_0.prototype.get_campaign_v2 = function(data) {
 	@options data {Integer} send_now: Flag to send campaign now. Possible values = 0 (default) & 1. send_now = 0 means campaign can’t be send now, & send_now = 1 means campaign ready to send now [Optional]
 
 */
-SendinblueAPI_v1_0.prototype.create_campaign = function(data) {
-	return this.post_request('campaign', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.create_campaign = function(data, cb) {
+	this.post_request('campaign', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -249,11 +343,16 @@ SendinblueAPI_v1_0.prototype.create_campaign = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {Integer} id: Id of campaign to be deleted [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.delete_campaign = function(data) {
+SendinblueAPI_v1_0.prototype.delete_campaign = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.delete_request('campaign/' + id, '');
+	this.delete_request('campaign/' + id, '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -278,11 +377,16 @@ SendinblueAPI_v1_0.prototype.delete_campaign = function(data) {
 	@options data {Integer} mirror_active: Status of mirror links in campaign. Possible values = 0 & 1 (default). mirror_active = 0 means mirror links are deactivated, & mirror_active = 1 means mirror links are activated, in the campaign [Optional]
 	@options data {Integer} send_now: Flag to send campaign now. Possible values = 0 (default) & 1. send_now = 0 means campaign can’t be send now, & send_now = 1 means campaign ready to send now [Optional]
 */
-SendinblueAPI_v1_0.prototype.update_campaign = function(data) {
+SendinblueAPI_v1_0.prototype.update_campaign = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.put_request('campaign/' + id, JSON.stringify(data));
+	this.put_request('campaign/' + id, JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -291,11 +395,16 @@ SendinblueAPI_v1_0.prototype.update_campaign = function(data) {
 	@options data {Integer} id: Id of campaign to update its status [Mandatory]
 	@options data {String} status: Types of status. Possible values – suspended, archive, darchive, sent, queued, replicate and replicate_template ( case sensitive ) [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.update_campaign_status = function(data) {
+SendinblueAPI_v1_0.prototype.update_campaign_status = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.put_request('campaign/' + id + '/updatecampstatus', JSON.stringify(data));
+	this.put_request('campaign/' + id + '/updatecampstatus', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -310,11 +419,16 @@ SendinblueAPI_v1_0.prototype.update_campaign_status = function(data) {
 	@options data {Array} email_cc: Same as email_to but for Cc [Optional]
 	@options data {String} email_body: Body of the message [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.campaign_report_email = function(data) {
+SendinblueAPI_v1_0.prototype.campaign_report_email = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.post_request('campaign/' + id + '/report', JSON.stringify(data));
+	this.post_request('campaign/' + id + '/report', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -324,11 +438,16 @@ SendinblueAPI_v1_0.prototype.campaign_report_email = function(data) {
 	@options data {String} notify_url: URL that will be called once the export process is finished [Mandatory]
 	@options data {String} type: Type of recipients. Possible values – all, non_clicker, non_opener, clicker, opener, soft_bounces, hard_bounces & unsubscribes [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.campaign_recipients_export = function(data) {
+SendinblueAPI_v1_0.prototype.campaign_recipients_export = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.post_request('campaign/' + id + '/recipients', JSON.stringify(data));
+	this.post_request('campaign/' + id + '/recipients', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -337,11 +456,16 @@ SendinblueAPI_v1_0.prototype.campaign_recipients_export = function(data) {
 	@options data {Integer} id: Id of the campaign [Mandatory]
 	@options data {Array} emails: Email address of recipient(s) existing in the one of the lists & should not be blacklisted. Example: "test@example.net". You can use commas to separate multiple recipients [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.send_bat_email = function(data) {
-	var campid = data.id;
+SendinblueAPI_v1_0.prototype.send_bat_email = function(data, cb) {
+	var id = data.id;
 
 	delete data.id;
-	return this.post_request('campaign/' + campid + '/test', JSON.stringify(data));
+	this.post_request('campaign/' + id + '/test', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -366,8 +490,13 @@ SendinblueAPI_v1_0.prototype.send_bat_email = function(data) {
 	@options data {Integer} mirror_active: Status of mirror links in campaign. Possible values = 0 & 1 (default). mirror_active = 0 means mirror links are deactivated, & mirror_active = 1 means mirror links are activated, in the campaign [Optional]
 	@options data {Integer} send_now: Flag to send campaign now. Possible values = 0 (default) & 1. send_now = 0 means campaign can’t be send now, & send_now = 1 means campaign ready to send now [Optional]
 */
-SendinblueAPI_v1_0.prototype.create_trigger_campaign = function(data) {
-	return this.post_request('campaign', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.create_trigger_campaign = function(data, cb) {
+	this.post_request('campaign', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -393,11 +522,16 @@ SendinblueAPI_v1_0.prototype.create_trigger_campaign = function(data) {
 	@options data {Integer} mirror_active: Status of mirror links in campaign. Possible values = 0 & 1 (default). mirror_active = 0 means mirror links are deactivated, & mirror_active = 1 means mirror links are activated, in the campaign [Optional]
 	@options data {Integer} send_now: Flag to send campaign now. Possible values = 0 (default) & 1. send_now = 0 means campaign can’t be send now, & send_now = 1 means campaign ready to send now [Optional]
 */
-SendinblueAPI_v1_0.prototype.update_trigger_campaign = function(data) {
+SendinblueAPI_v1_0.prototype.update_trigger_campaign = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.put_request('campaign/' + id, JSON.stringify(data));
+	this.put_request('campaign/' + id, JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -405,8 +539,13 @@ SendinblueAPI_v1_0.prototype.update_trigger_campaign = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {Array} camp_ids: Id of campaign to get share link. You can use commas to separate multiple ids [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.share_campaign = function(data) {
-	return this.post_request('campaign/sharelinkv2', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.share_campaign = function(data, cb) {
+	this.post_request('campaign/sharelinkv2', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -415,8 +554,13 @@ SendinblueAPI_v1_0.prototype.share_campaign = function(data) {
 	@options data {Integer} page: Maximum number of records per request is 50, if there are more than 50 processes then you can use this parameter to get next 50 results [Mandatory]
 	@options data {Integer} page_limit: This should be a valid number between 1-50 [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.get_processes = function(data) {
-	return this.get_request('process', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.get_processes = function(data, cb) {
+	this.get_request('process', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -424,8 +568,16 @@ SendinblueAPI_v1_0.prototype.get_processes = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {Integer} id: Id of process to get details [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.get_process = function(data) {
-	return this.get_request('process/' + data.id, '');
+SendinblueAPI_v1_0.prototype.get_process = function(data, cb) {
+	var id = data.id;
+
+	delete data.id;
+	this.get_request('process/' + id, '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -435,8 +587,13 @@ SendinblueAPI_v1_0.prototype.get_process = function(data) {
 	@options data {Integer} page: Maximum number of records per request is 50, if there are more than 50 processes then you can use this parameter to get next 50 results [Mandatory]
 	@options data {Integer} page_limit: This should be a valid number between 1-50 [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.get_lists = function(data) {
-	return this.get_request('list', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.get_lists = function(data, cb) {
+	this.get_request('list', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -444,8 +601,16 @@ SendinblueAPI_v1_0.prototype.get_lists = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {Integer} id: Id of list to get details [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.get_list = function(data) {
-	return this.get_request('list/' + data.id, '');
+SendinblueAPI_v1_0.prototype.get_list = function(data, cb) {
+	var id = data.id;
+
+	delete data.id;
+	this.get_request('list/' + id, '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -454,8 +619,13 @@ SendinblueAPI_v1_0.prototype.get_list = function(data) {
 	@options data {String} list_name: Desired name of the list to be created [Mandatory]
 	@options data {Integer} list_parent: Folder ID [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.create_list = function(data) {
-	return this.post_request('list', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.create_list = function(data, cb) {
+	this.post_request('list', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -463,11 +633,16 @@ SendinblueAPI_v1_0.prototype.create_list = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {Integer} id: Id of list to be deleted [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.delete_list = function(data) {
+SendinblueAPI_v1_0.prototype.delete_list = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.delete_request('list/' + id, '');
+	this.delete_request('list/' + id, '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -477,11 +652,16 @@ SendinblueAPI_v1_0.prototype.delete_list = function(data) {
 	@options data {String} list_name: Desired name of the list to be modified [Optional]
 	@options data {Integer} list_parent: Folder ID [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.update_list = function(data) {
+SendinblueAPI_v1_0.prototype.update_list = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.put_request('list/' + id, JSON.stringify(data));
+	this.put_request('list/' + id, JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -492,8 +672,13 @@ SendinblueAPI_v1_0.prototype.update_list = function(data) {
 	@options data {Integer} page: Maximum number of records per request is 500, if in your list there are more than 500 users then you can use this parameter to get next 500 results [Optional]
 	@options data {Integer} page_limit: This should be a valid number between 1-500 [Optional]
 */
-SendinblueAPI_v1_0.prototype.display_list_users = function(data) {
-	return this.get_request('list/display', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.display_list_users = function(data, cb) {
+	this.post_request('list/display', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -502,11 +687,16 @@ SendinblueAPI_v1_0.prototype.display_list_users = function(data) {
 	@options data {Integer} id: Id of list to link users in it [Mandatory]
 	@options data {Array} users: Email address of the already existing user(s) in the SendinBlue contacts. Example: "test@example.net". You can use commas to separate multiple users [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.add_users_list = function(data) {
+SendinblueAPI_v1_0.prototype.add_users_list = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.post_request('list/' + id + '/users', JSON.stringify(data));
+	this.post_request('list/' + id + '/users', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -515,11 +705,16 @@ SendinblueAPI_v1_0.prototype.add_users_list = function(data) {
 	@options data {Integer} id: Id of list to unlink users from it [Mandatory]
 	@options data {Array} users: Email address of the already existing user(s) in the SendinBlue contacts to be modified. Example: "test@example.net". You can use commas to separate multiple users [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.delete_users_list = function(data) {
+SendinblueAPI_v1_0.prototype.delete_users_list = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.delete_request('list/' + id + '/delusers', JSON.stringify(data));
+	this.delete_request('list/' + id + '/delusers', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -537,8 +732,13 @@ SendinblueAPI_v1_0.prototype.delete_users_list = function(data) {
 	@options data {Array} headers: The headers will be sent along with the mail headers in original email. Example: array("Content-Type"=>"text/html; charset=iso-8859-1"). You can use commas to separate multiple headers [Optional]
 	@options data {Array} inline_image: Pass your inline image/s filename & its base64 encoded chunk data as an associative array. Possible extension values = gif, png, bmp, cgm, jpg and jpeg. Example: array("YourFileName.Extension"=>"Base64EncodedChunkData"). You can use commas to separate multiple inline images [Optional]
 */
-SendinblueAPI_v1_0.prototype.send_email = function(data) {
-	return this.post_request('email', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.send_email = function(data, cb) {
+	this.post_request('email', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -546,8 +746,13 @@ SendinblueAPI_v1_0.prototype.send_email = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {String} is_plat: Flag to get webhooks. Possible values – 0 & 1. Example: to get Transactional webhooks, use $is_plat=0, to get Marketing webhooks, use $is_plat=1, & to get all webhooks, use $is_plat="" [Optional]
 */
-SendinblueAPI_v1_0.prototype.get_webhooks = function(data) {
-	return this.get_request('webhook', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.get_webhooks = function(data, cb) {
+	this.get_request('webhook', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -555,8 +760,16 @@ SendinblueAPI_v1_0.prototype.get_webhooks = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {String} is_plat: Flag to get webhooks. Possible values – 0 & 1. Example: to get Transactional webhooks, use $is_plat=0, to get Marketing webhooks, use $is_plat=1, & to get all webhooks, use $is_plat="" [Optional]
 */
-SendinblueAPI_v1_0.prototype.get_webhook = function(data) {
-	return this.get_request('webhook/' + data.id, '');
+SendinblueAPI_v1_0.prototype.get_webhook = function(data, cb) {
+	var id = data.id;
+
+	delete data.id;
+	this.get_request('webhook/' + id, '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -567,8 +780,13 @@ SendinblueAPI_v1_0.prototype.get_webhook = function(data) {
 	@options data {Array} events: Set of events. You can use commas to separate multiple events. Possible values for Transcational webhook – request, delivered, hard_bounce, soft_bounce, blocked, spam, invalid_email, deferred, click, & opened and Possible Values for Marketing webhook – spam, opened, click, hard_bounce, unsubscribe, soft_bounce & list_addition ( case sensitive ) [Mandatory]
 	@options data {Integer} is_plat: Flag to create webhook type. Possible values – 0 (default) & 1. Example: to create Transactional webhooks, use $is_plat=0, & to create Marketing webhooks, use $is_plat=1 [Optional]
 */
-SendinblueAPI_v1_0.prototype.create_webhook = function(data) {
-	return this.post_request('webhook', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.create_webhook = function(data, cb) {
+	this.post_request('webhook', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -576,11 +794,16 @@ SendinblueAPI_v1_0.prototype.create_webhook = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {Integer} id: Id of webhook to be deleted [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.delete_webhook = function(data) {
+SendinblueAPI_v1_0.prototype.delete_webhook = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.delete_request('webhook/' + id, '');
+	this.delete_request('webhook/' + id, '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -591,11 +814,16 @@ SendinblueAPI_v1_0.prototype.delete_webhook = function(data) {
 	@options data {String} description: Webook description [Optional]
 	@options data {Array} events: Set of events. You can use commas to separate multiple events. Possible values for Transcational webhook – request, delivered, hard_bounce, soft_bounce, blocked, spam, invalid_email, deferred, click, & opened and Possible Values for Marketing webhook – spam, opened, click, hard_bounce, unsubscribe, soft_bounce & list_addition ( case sensitive ) [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.update_webhook = function(data) {
+SendinblueAPI_v1_0.prototype.update_webhook = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.put_request('webhook/' + id, JSON.stringify(data));
+	this.put_request('webhook/' + id, JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -607,8 +835,13 @@ SendinblueAPI_v1_0.prototype.update_webhook = function(data) {
 	@options data {Integer} days: Number of days in the past to include statistics ( Includes today ). It must be an integer greater than 0 [Optional]
 	@options data {String} tag: The tag you will specify to retrieve detailed stats. It must be an existing tag that has statistics [Optional]
 */
-SendinblueAPI_v1_0.prototype.get_statistics = function(data) {
-	return this.post_request('statistics', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.get_statistics = function(data, cb) {
+	this.post_request('statistics', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -616,8 +849,16 @@ SendinblueAPI_v1_0.prototype.get_statistics = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {String} email: Email address of the already existing user in the SendinBlue contacts [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.get_user = function(data) {
-	return this.get_request('user/' + data.email, '');
+SendinblueAPI_v1_0.prototype.get_user = function(data, cb) {
+	var email = data.email;
+
+	delete data.email;
+	this.get_request('user/' + email, '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -625,11 +866,16 @@ SendinblueAPI_v1_0.prototype.get_user = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {String} email: Email address of the already existing user in the SendinBlue contacts to be unlinked from all lists [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.delete_user = function(data) {
+SendinblueAPI_v1_0.prototype.delete_user = function(data, cb) {
 	var email = data.email;
 
 	delete data.email;
-	return this.delete_request('user/' + email, '');
+	this.delete_request('user/' + email, '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -642,8 +888,13 @@ SendinblueAPI_v1_0.prototype.delete_user = function(data) {
 	@options data {String} name: This is new list name which will be created first & then users will be imported in it [Mandatory: if listids is empty]
 	@options data {Integer} list_parent: This is the existing folder id & can be used with name parameter to make newly created list’s desired parent [Optional]
 */
-SendinblueAPI_v1_0.prototype.import_users = function(data) {
-	return this.post_request('user/import', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.import_users = function(data, cb) {
+	this.post_request('user/import', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -653,8 +904,13 @@ SendinblueAPI_v1_0.prototype.import_users = function(data) {
 	@options data {String} filter: Filter can be added to export users. Example: "{\"blacklisted\":1}", will export all blacklisted users [Mandatory]
 	@options data {String} notify_url: URL that will be called once the export process is finished [Optional]
 */
-SendinblueAPI_v1_0.prototype.export_users = function(data) {
-	return this.post_request('user/export', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.export_users = function(data, cb) {
+	this.post_request('user/export', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -667,16 +923,26 @@ SendinblueAPI_v1_0.prototype.export_users = function(data) {
 	@options data {Array} listid_unlink: The list id(s) to be unlinked from user [Optional]
 	@options data {Array} blacklisted_sms: This is used to blacklist/ Unblacklist a user’s SMS number. Possible values – 0 & 1. blacklisted_sms = 1 means user’s SMS number has been blacklisted [Optional]
 */
-SendinblueAPI_v1_0.prototype.create_update_user = function(data) {
-	return this.post_request('user/createdituser', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.create_update_user = function(data, cb) {
+	this.post_request('user/createdituser', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
 	Access all the attributes information under the account.
 	No input required
 */
-SendinblueAPI_v1_0.prototype.get_attributes = function() {
-	return this.get_request('attribute', '');
+SendinblueAPI_v1_0.prototype.get_attributes = function(data, cb) {
+	this.get_request('attribute', '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -684,8 +950,16 @@ SendinblueAPI_v1_0.prototype.get_attributes = function() {
 	@param {Object} data contains json object with key value pair.
 	@options data {String} type: Type of attribute. Possible values – normal, transactional, category, calculated & global [Optional]
 */
-SendinblueAPI_v1_0.prototype.get_attribute = function(data) {
-	return this.get_request('attribute/' + data.type, '');
+SendinblueAPI_v1_0.prototype.get_attribute = function(data, cb) {
+	var type = data.type;
+
+	delete data.type;
+	this.get_request('attribute/' + type, '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -693,10 +967,15 @@ SendinblueAPI_v1_0.prototype.get_attribute = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {String} type: Type of attribute. Possible values – normal, transactional, category, calculated & global ( case sensitive ) [Mandatory]
 	@options data {Array} data: The name and data type of ‘normal’ & ‘transactional’ attribute to be created in your SendinBlue account. It should be sent as an associative array. Example: array(‘ATTRIBUTE_NAME1′ => ‘DATA_TYPE1′, ‘ATTRIBUTE_NAME2’=> ‘DATA_TYPE2′).
-	The name and data value of ‘category’, ‘calculated’ & ‘global’, should be sent as JSON string. Example: ‘[{ "name":"ATTRIBUTE_NAME1", "value":"Attribute_value1" }, { "name":"ATTRIBUTE_NAME2", "value":"Attribute_value2" }]’. You can use commas to separate multiple attributes [Mandatory]
+	The name and data value of ‘category’, ‘calculated’ & ‘global’, should be sent as JSON string. Example: ‘[{ "name":"ATTRIBUTE_NAME1", "value":"Attribute_value1" }; { "name":"ATTRIBUTE_NAME2", "value":"Attribute_value2" }]’. You can use commas to separate multiple attributes [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.create_attribute = function(data) {
-	return this.post_request('attribute', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.create_attribute = function(data, cb) {
+	this.post_request('attribute', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -704,11 +983,16 @@ SendinblueAPI_v1_0.prototype.create_attribute = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {Integer} type: Type of attribute to be deleted [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.delete_attribute = function(data) {
+SendinblueAPI_v1_0.prototype.delete_attribute = function(data, cb) {
 	var type = data.type;
 
 	delete data.type;
-	return this.post_request('attribute/' + type, JSON.stringify(data));
+	this.post_request('attribute/' + type, JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -722,8 +1006,13 @@ SendinblueAPI_v1_0.prototype.delete_attribute = function(data) {
 	@options data {Integer} days: Number of days in the past (includes today). If specified, must be an integer greater than 0 [Optional]
 	@options data {String} email: Email address to search report for [Optional]
 */
-SendinblueAPI_v1_0.prototype.get_report = function(data) {
-	return this.post_request('report', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.get_report = function(data, cb) {
+	this.post_request('report', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -732,8 +1021,13 @@ SendinblueAPI_v1_0.prototype.get_report = function(data) {
 	@options data {Integer} page: Maximum number of records per request is 50, if there are more than 50 folders then you can use this parameter to get next 50 results [Mandatory]
 	@options data {Integer} page_limit: This should be a valid number between 1-50 [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.get_folders = function(data) {
-	return this.get_request('folder', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.get_folders = function(data, cb) {
+	this.get_request('folder', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -741,8 +1035,16 @@ SendinblueAPI_v1_0.prototype.get_folders = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {Integer} id: Id of folder to get details [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.get_folder = function(data) {
-	return this.get_request('folder/' + data.id, '');
+SendinblueAPI_v1_0.prototype.get_folder = function(data, cb) {
+	var id = data.id;
+
+	delete data.id;
+	this.get_request('folder/' + id, '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -750,8 +1052,13 @@ SendinblueAPI_v1_0.prototype.get_folder = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {String} name: Desired name of the folder to be created [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.create_folder = function(data) {
-	return this.post_request('folder', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.create_folder = function(data, cb) {
+	this.post_request('folder', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -759,11 +1066,16 @@ SendinblueAPI_v1_0.prototype.create_folder = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {Integer} id: Id of folder to be deleted [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.delete_folder = function(data) {
+SendinblueAPI_v1_0.prototype.delete_folder = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.delete_request('folder/' + id, '');
+	this.delete_request('folder/' + id, '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -772,11 +1084,16 @@ SendinblueAPI_v1_0.prototype.delete_folder = function(data) {
 	@options data {Integer} id: Id of folder to be modified [Mandatory]
 	@options data {String} name: Desired name of the folder to be modified [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.update_folder = function(data) {
+SendinblueAPI_v1_0.prototype.update_folder = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.put_request('folder/' + id, JSON.stringify(data));
+	this.put_request('folder/' + id, JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -786,8 +1103,13 @@ SendinblueAPI_v1_0.prototype.update_folder = function(data) {
 	@options data {String} end_date: The end date to get report till date. Date must be in YYYY-MM-DD format and should be after the start_date [Optional]
 	@options data {String} email: Email address to delete its bounces [Optional]
 */
-SendinblueAPI_v1_0.prototype.delete_bounces = function(data) {
-	return this.post_request('bounces', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.delete_bounces = function(data, cb) {
+	this.post_request('bounces', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -802,11 +1124,16 @@ SendinblueAPI_v1_0.prototype.delete_bounces = function(data) {
 	@options data {Array} attachment: To send attachment/s generated on the fly you have to pass your attachment/s filename & its base64 encoded chunk data as an associative array [Optional]
 	@options data {Array} headers: The headers will be sent along with the mail headers in original email. Example: array("Content-Type"=>"text/html; charset=iso-8859-1"). You can use commas to separate multiple headers [Optional]
 */
-SendinblueAPI_v1_0.prototype.send_transactional_template = function(data) {
+SendinblueAPI_v1_0.prototype.send_transactional_template = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.put_request('template/' + id, JSON.stringify(data));
+	this.put_request('template/' + id, JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -824,8 +1151,13 @@ SendinblueAPI_v1_0.prototype.send_transactional_template = function(data) {
 	@options data {Integer} status: Status of template. Possible values = 0 (default) & 1. status = 0 means template is inactive, & status = 1 means template is active [Optional]
 	@options data {Integer} attachment: Status of attachment. Possible values = 0 (default) & 1. attach = 0 means an attachment can’t be sent, & attach = 1 means an attachment can be sent, in the email [Optional]
 */
-SendinblueAPI_v1_0.prototype.create_template = function(data) {
-	return this.post_request('template', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.create_template = function(data, cb) {
+	this.post_request('template', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -844,11 +1176,16 @@ SendinblueAPI_v1_0.prototype.create_template = function(data) {
 	@options data {Integer} status: Status of template. Possible values = 0 (default) & 1. status = 0 means template is inactive, & status = 1 means template is active [Optional]
 	@options data {Integer} attachment: Status of attachment. Possible values = 0 (default) & 1. attach = 0 means an attachment can’t be sent, & attach = 1 means an attachment can be sent, in the email [Optional]
 */
-SendinblueAPI_v1_0.prototype.update_template = function(data) {
+SendinblueAPI_v1_0.prototype.update_template = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.put_request('template/' + id, JSON.stringify(data));
+	this.put_request('template/' + id, JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -856,8 +1193,13 @@ SendinblueAPI_v1_0.prototype.update_template = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {String} option: Options to get senders. Possible options – IP-wise, & Domain-wise ( only for dedicated IP clients ). Example: to get senders with specific IP, use $option=’1.2.3.4′, to get senders with specific domain use, $option=’domain.com’, & to get all senders, use $option="" [Optional]
 */
-SendinblueAPI_v1_0.prototype.get_senders = function(data) {
-	return this.get_request('advanced', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.get_senders = function(data, cb) {
+	this.get_request('advanced', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -867,8 +1209,13 @@ SendinblueAPI_v1_0.prototype.get_senders = function(data) {
 	@options data {String} email: Email address of the sender [Mandatory]
 	@options data {Array} ip_domain: Pass pipe ( | ) separated Dedicated IP and its associated Domain. Example: "1.2.3.4|mydomain.com". You can use commas to separate multiple ip_domain’s [Mandatory: Only for Dedicated IP clients, for Shared IP clients, it should be kept blank]
 */
-SendinblueAPI_v1_0.prototype.create_sender = function(data) {
-	return this.post_request('advanced', JSON.stringify(data));
+SendinblueAPI_v1_0.prototype.create_sender = function(data, cb) {
+	this.post_request('advanced', JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -878,11 +1225,16 @@ SendinblueAPI_v1_0.prototype.create_sender = function(data) {
 	@options data {String} name: Name of the sender [Mandatory]
 	@options data {Array} ip_domain: Pass pipe ( | ) separated Dedicated IP and its associated Domain. Example: "1.2.3.4|mydomain.com". You can use commas to separate multiple ip_domain’s [Mandatory: Only for Dedicated IP clients, for Shared IP clients, it should be kept blank]
 */
-SendinblueAPI_v1_0.prototype.update_sender = function(data) {
+SendinblueAPI_v1_0.prototype.update_sender = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.put_request('advanced/' + id, JSON.stringify(data));
+	this.put_request('advanced/' + id, JSON.stringify(data), function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
 
 /*
@@ -890,9 +1242,14 @@ SendinblueAPI_v1_0.prototype.update_sender = function(data) {
 	@param {Object} data contains json object with key value pair.
 	@options data {Integer} id: Id of sender to be deleted [Mandatory]
 */
-SendinblueAPI_v1_0.prototype.delete_sender = function(data) {
+SendinblueAPI_v1_0.prototype.delete_sender = function(data, cb) {
 	var id = data.id;
 
 	delete data.id;
-	return this.delete_request('advanced/' + id, '');
+	this.delete_request('advanced/' + id, '', function(error, result) {
+		if (error) {
+			return cb(error, null);
+		}
+		return cb(null, result);
+	});
 };
