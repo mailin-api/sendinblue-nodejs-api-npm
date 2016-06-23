@@ -70,13 +70,6 @@ SendinblueAPI_v1_0.prototype.delete_request = function(resource, input, cb) {
 */
 SendinblueAPI_v1_0.prototype.get_account = function(data, cb) {
 	this.get_request('account', '', function(error, result) {
-
-		/*if(!error && result.httpstatuscode == 200) {
-					return cb(null, result);
-		} else {
-			return cb(error, null);
-		}*/
-
 		if (error) {
 			return cb(error, null);
 		}
