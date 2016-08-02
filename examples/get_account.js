@@ -1,5 +1,7 @@
-var sendinblue = require('../sendinblue-api');
-var sendinObj = new sendinblue('https://api.sendinblue.com/v2.0', 'your_api_key', 5000);
+var sendinblue = require('sendinblue-api');
+
+var parameters = { "apiKey": "your_api_key", "timeout": 5000 };
+var sendinObj = new sendinblue(parameters);
 
 var input = {};
 sendinObj.get_account(input, function(err, response){
