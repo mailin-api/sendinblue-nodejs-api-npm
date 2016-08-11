@@ -9,6 +9,8 @@ SendinBlue API's use HTTP Authentication through an api key. You can create your
 
 The following recommended installation requires [npm](https://npmjs.org/). If you are unfamiliar with npm, see the [npm docs](https://npmjs.org/doc/).
 
+Our npm package is available here https://www.npmjs.com/package/sendinblue-api
+
 Add the following to your `package.json` file:
 
 ```json
@@ -59,15 +61,10 @@ Assuming that you have installed this package, use below sample script to get st
 ```
 
 
-## Release History
-
-* 1.0.0 Initial release
-
-
 ## Support and Feedback
 
 Be sure to visit the SendinBlue official [documentation website](https://apidocs.sendinblue.com) for additional information about our API.
 
-If you find a bug, please submit the issue in [Github directly](https://github.com/mailin-api/api-node-js/issues). 
+If you find a bug, please submit the issue in [Github directly](https://github.com/mailin-api/sendinblue-nodejs-api-npm/issues). 
 
 As always, if you need additional assistance, drop us a note [here](https://apidocs.sendinblue.com/support/).
