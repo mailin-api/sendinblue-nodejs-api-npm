@@ -5,7 +5,11 @@ var sendinObj = new sendinblue(parameters);
 
 var input = {};
 sendinObj.get_account(input, function(err, response){
-     console.log(response);
+    if(err){
+        console.log(err);
+    } else {
+        console.log(response);
+    }
 });
 
 /*

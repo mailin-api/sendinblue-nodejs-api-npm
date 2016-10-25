@@ -13,7 +13,11 @@ var input = { 'email': 'example@example.net',
 };
 
 sendinObj.create_update_user(input, function(err, response){
-    console.log(response);
+    if(err){
+        console.log(err);
+    } else {
+        console.log(response);
+    }
 });
 
 /*

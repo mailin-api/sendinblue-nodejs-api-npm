@@ -10,7 +10,11 @@ var input =	{ 'to': { 'to@example.net': 'to whom!' },
 };
 
 sendinObj.send_email(input, function(err, response){
-    console.log(response);
+    if(err){
+        console.log(err);
+    } else {
+        console.log(response);
+    }
 });
 
 /*
