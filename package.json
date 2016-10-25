@@ -1,6 +1,6 @@
 {
   "name": "sendinblue-api",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Official SendinBlue provided API V2 npm library",
   "main": "sendinblue-api.js",
   "scripts": {
