@@ -22,6 +22,9 @@ SendinblueAPI.prototype.call = function(resource, method, input, cb) {
 	}
 
 	restler.request(called_url, {method: method, timeout: this.timeout, data: input, headers: {'api-key': this.api_key, 'content-type': content_type}})
+	.on('timeout', function(ms){
+		cb(null, 'Request timed out within '+ms+' MS');
+	})
 	.on('complete', function(response) {
 		var responseObj = JSON.parse(response);
 
