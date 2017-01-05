@@ -26,9 +26,12 @@ SendinblueAPI.prototype.call = function(resource, method, input, cb) {
 		cb('Request timed out within '+ms+' MS', null);
 	})
 	.on('complete', function(response) {
-		var responseObj = JSON.parse(response);
-
-		cb(null, responseObj);
+		if (response instanceof Error) {
+			cb("Request Failed", null);
+		} else {
+			var responseObj = JSON.parse(response);
+			cb(null, responseObj);
+		}
 	});
 };
 
