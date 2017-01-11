@@ -850,7 +850,7 @@ SendinblueAPI.prototype.get_user = function(data, cb) {
 	var email = data.email;
 
 	delete data.email;
-	this.get_request('user/' + email, '', function(error, result) {
+	this.get_request('user/' + encodeURIComponent(email), '', function(error, result) {
 		if (error) {
 			return cb(error, null);
 		}
