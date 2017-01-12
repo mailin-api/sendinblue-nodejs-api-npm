@@ -870,7 +870,7 @@ SendinblueAPI.prototype.delete_user = function(data, cb) {
 	var email = data.email;
 
 	delete data.email;
-	this.delete_request('user/' + email, '', function(error, result) {
+	this.delete_request('user/' + encodeURIComponent(email), '', function(error, result) {
 		if (error) {
 			return cb(error, null);
 		}
